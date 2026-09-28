@@ -6,3 +6,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+video_frames/
+*.db
+*.bak
+.vscode/
