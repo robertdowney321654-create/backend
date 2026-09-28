@@ -1,0 +1,19 @@
+[portal]
+base_url = "http://127.0.0.1:8001"
+
+[tiers]
+claimed = ["T1", "T2"]
+pitch = "A self-hosted hackathon portal with fixture-backed submissions and isolated judging."
+
+[auth]
+organizer = "Authorization: Bearer dogfood-organizer"
+judge_a = "Authorization: Bearer dogfood-judge-a"
+judge_b = "Authorization: Bearer dogfood-judge-b"
+participant = "Authorization: Bearer dogfood-participant"
+
+[routes]
+gallery = "/api/v1/events/evt_01/submissions"
+submit = "/api/v1/events/evt_01/submissions"
+judge_scores = "/api/v1/lifecycle/judge-scores?judge=tomas.varga%40example.org"
+peer_scores = "/api/v1/lifecycle/judge-scores?judge=tomas.varga%40example.org"
+csv_export = "/api/v1/events/evt_01/export.csv"

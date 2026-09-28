@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dogfood}
+      POSTGRES_USER: ${POSTGRES_USER:-dogfood}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dogfood-local-only-change-before-deployment}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+  backend:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dogfood}:${POSTGRES_PASSWORD:-dogfood-local-only-change-before-deployment}@postgres:5432/${POSTGRES_DB:-dogfood}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dogfood-secret-change-before-deployment}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DOGFOOD_MODE: ${DOGFOOD_MODE:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://127.0.0.1:5173","http://localhost:5173"]}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8001:8000"
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8001}
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:5174:80"
+    restart: unless-stopped
+volumes:
+  postgres_data:
